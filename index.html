@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MR LAZY | TERMINAL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.trunk.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Fira Code', monospace; }
+        body, html { height: 100%; width: 100%; overflow: hidden; background: #000; color: #00ff41; }
+
+        #vanta-bg { position: fixed; width: 100%; height: 100%; z-index: -1; }
+
+        /* Header & Drawer */
+        header { 
+            position: fixed; top: 0; width: 100%; padding: 15px 25px; 
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid #00ff41; z-index: 100;
+        }
+        .brand { font-size: 1.5rem; font-weight: bold; letter-spacing: 5px; text-shadow: 0 0 10px #00ff41; }
+        .menu-icon { font-size: 1.5rem; cursor: pointer; }
+
+        .drawer {
+            position: fixed; top: 0; right: -300px; width: 280px; height: 100%;
+            background: rgba(0, 20, 0, 0.95); border-left: 1px solid #00ff41;
+            transition: 0.5s; z-index: 200; padding: 80px 20px;
+        }
+        .drawer.active { right: 0; }
+        .drawer a { display: block; color: #00ff41; text-decoration: none; margin: 20px 0; font-size: 1.1rem; }
+
+        /* Warning Scroll */
+        .warning-container {
+            width: 100%; overflow: hidden; border: 1px solid rgba(255, 0, 0, 0.5);
+            background: rgba(50, 0, 0, 0.2); margin-top: 10px; border-radius: 5px; padding: 10px;
+            white-space: nowrap;
+        }
+        .warning-text { display: inline-block; animation: scrollLeftRight 15s linear infinite; font-size: 12px; color: #ff3e3e; }
+        @keyframes scrollLeftRight { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+        /* Main Extractor UI */
+        .main-ui { display: flex; justify-content: center; align-items: center; height: 100vh; padding: 20px; }
+        .terminal-box {
+            width: 100%; max-width: 500px; background: rgba(0, 0, 0, 0.85); 
+            border: 1px solid #00ff41; padding: 25px; border-radius: 5px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); z-index: 10;
+        }
+
+        /* Real-time Hacking Console */
+        .hacking-console {
+            margin-top: 15px; background: #000; border: 1px solid #004411;
+            height: 80px; padding: 8px; font-size: 9px; overflow-y: hidden;
+            color: #008822; line-height: 1.2;
+        }
+
+        input { width: 100%; background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 12px; margin: 15px 0; outline: none; }
+        button { width: 100%; background: #00ff41; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #000; color: #00ff41; box-shadow: 0 0 15px #00ff41; }
+
+        #key-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .mini-dialog { width: 300px; padding: 25px; background: #000; border: 1px solid #00ff41; border-radius: 10px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 65, 0.3); }
+        .gen-key-link { display: block; margin-top: 15px; color: #00ff41; font-size: 11px; text-decoration: underline; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="vanta-bg"></div>
+
+    <header>
+        <div class="brand">MR LAZY</div>
+        <div class="menu-icon" onclick="toggleDrawer()">☰</div>
+    </header>
+
+    <div class="drawer" id="drawer">
+        <h3 style="border-bottom: 1px solid #0f0;">SYSTEM MENU</h3>
+        <a href="generatekey.html">GENERATE KEY</a>
+        <a href="#" onclick="toggleDrawer()">CLOSE [X]</a>
+    </div>
+
+    <div id="key-overlay">
+        <div class="mini-dialog">
+            <h3 style="font-size: 14px; margin-bottom: 10px;">ENCRYPTED ACCESS</h3>
+            <input type="text" id="access-key" placeholder="ENTER ACCESS KEY">
+            <button onclick="verifyKey()">AUTHORIZE</button>
+            <a href="generatekey.html" class="gen-key-link">> GET ACCESS KEY <</a>
+        </div>
+    </div>
+
+    <div class="main-ui">
+        <div class="terminal-box">
+            <h2 style="font-size: 16px; text-align: center;">BYPASS_PROTOCOL_V4.0</h2>
+            
+            <div class="warning-container">
+                <div class="warning-text">
+                    [SYSTEM WARNING] INJECTING CORS BYPASS... TARGET SCANNING ACTIVE... STAY ANONYMOUS...
+                </div>
+            </div>
+
+            <input type="url" id="target-url" placeholder="ENTER TARGET URL (HTTPS://...)">
+            <button onclick="startExtraction()">EXECUTE EXTRACTION</button>
+            
+            <div class="hacking-console" id="hack-console">
+                <div>> SYSTEM INITIALIZED...</div>
+                <div>> WAITING FOR TARGET...</div>
+            </div>
+
+            <p style="font-size: 10px; text-align: center; margin-top: 10px;">REMAINING USES: <span id="limit">2</span>/2</p>
+
+            <div style="margin-top: 10px; font-size: 10px; opacity: 0.6; text-align: center;">
+                SUPPORT: TELEGRAM @MRLAZY
+            </div>
+        </div>
+    </div>
+
+    <script>
+        VANTA.TRUNK({
+          el: "#vanta-bg",
+          mouseControls: true, touchControls: true, gyroControls: false,
+          minHeight: 200.00, minWidth: 200.00, scale: 1.00, scaleMobile: 1.00,
+          color: 0x00ff41, backgroundColor: 0x0, spacing: 4.00, chaos: 4.00
+        });
+
+        // Hacking Log Simulation
+        const consoleEl = document.getElementById('hack-console');
+        const logMessages = [
+            "Injecting payload...", "Bypassing security...", "Kernel exploit loaded", 
+            "Mapping target...", "Requesting headers...", "Bypassing CORS policy...",
+            "Decrypting data...", "SSL Strip active", "Proxy enabled", "Root access granted"
+        ];
+
+        function addLog() {
+            const div = document.createElement('div');
+            div.innerText = "> " + logMessages[Math.floor(Math.random() * logMessages.length)];
+            consoleEl.appendChild(div);
+            if(consoleEl.children.length > 6) consoleEl.removeChild(consoleEl.firstChild);
+        }
+        setInterval(addLog, 2000);
+
+        function toggleDrawer() { document.getElementById('drawer').classList.toggle('active'); }
+
+        const MASTER_KEY = "LAZY-99"; 
+
+        function verifyKey() {
+            const key = document.getElementById('access-key').value;
+            if(key === MASTER_KEY) {
+                localStorage.setItem('lazy_auth', 'true');
+                localStorage.setItem('lazy_limit', '2');
+                document.getElementById('key-overlay').style.display = 'none';
+                document.getElementById('limit').innerText = "2";
+            } else { alert("ACCESS DENIED"); }
+        }
+
+        async function startExtraction() {
+            let limit = parseInt(localStorage.getItem('lazy_limit') || '0');
+            if(limit <= 0) { alert("LIMIT EXPIRED!"); location.reload(); return; }
+
+            const url = document.getElementById('target-url').value;
+            if(!url) return;
+
+            addLog(); // Trigger manual log
+            try {
+                const res = await fetch('/api', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                if(res.ok) {
+                    const data = await res.text();
+                    const blob = new Blob([data], {type: 'text/html'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "source.html";
+                    a.click();
+                    limit--;
+                    localStorage.setItem('lazy_limit', limit);
+                    document.getElementById('limit').innerText = limit;
+                }
+            } catch(e) { alert("ERROR!"); }
+        }
+
+        if(localStorage.getItem('lazy_auth') === 'true' && parseInt(localStorage.getItem('lazy_limit')) > 0) {
+            document.getElementById('key-overlay').style.display = 'none';
+            document.getElementById('limit').innerText = localStorage.getItem('lazy_limit');
+        }
+    </script>
+</body>
+</html>

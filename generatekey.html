@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR LAZY | KEY SERVER</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { border: 1px solid #0f0; padding: 30px; background: rgba(0, 20, 0, 0.9); text-align: center; box-shadow: 0 0 20px #0f0; border-radius: 10px; width: 300px; }
+        .key-box { background: #111; padding: 15px; border: 1px dashed #0f0; color: #fff; font-size: 1.4rem; margin: 20px 0; letter-spacing: 2px; }
+        button { background: #0f0; color: #000; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>[ KEY SERVER ]</h3>
+        <p style="font-size: 10px;">GENERATING UNIQUE ACCESS TOKEN...</p>
+        <div id="display-key" class="key-box">LOADING...</div>
+        <button onclick="copyKey()">COPY & AUTHORIZE</button>
+    </div>
+
+    <script>
+        let fetchedKey = "";
+        async function getNewKey() {
+            try {
+                // সার্ভার থেকে নতুন র‍্যান্ডম কি আনা হচ্ছে
+                const res = await fetch('/api');
+                const data = await res.json();
+                fetchedKey = data.key;
+                document.getElementById('display-key').innerText = fetchedKey;
+            } catch(e) { document.getElementById('display-key').innerText = "ERROR!"; }
+        }
+
+        function copyKey() {
+            if(!fetchedKey) return;
+            navigator.clipboard.writeText(fetchedKey);
+            alert("KEY COPIED: " + fetchedKey);
+            window.history.back();
+        }
+        window.onload = getNewKey;
+    </script>
+</body>
+</html>

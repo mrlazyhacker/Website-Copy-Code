@@ -11,42 +11,43 @@ module.exports = async (req, res) => {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    // ১. নতুন ডাইনামিক কি জেনারেট করা (generatekey.html থেকে কল হবে)
+    // ১. র‍্যান্ডম কি জেনারেট করা
     if (req.method === 'GET') {
         serverSideKey = "LAZY-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-        useCount = 0; // নতুন কি তৈরি হলে লিমিট রিসেট হবে
+        useCount = 0;
         return res.status(200).json({ key: serverSideKey });
     }
 
-    // ২. কি ভেরিফিকেশন ও ডেটা এক্সট্রাকশন
+    // ২. এক্সট্রাকশন ও ভেরিফিকেশন
     if (req.method === 'POST') {
         const { url, key } = req.body;
 
         const isAdmin = (key === ADMIN_KEY);
-        const isDynamicKey = (serverSideKey && key === serverSideKey);
+        const isDynamicMatch = (serverSideKey !== "" && key === serverSideKey);
 
-        // যদি অ্যাডমিন কি অথবা ডাইনামিক কি—কোনোটাই না মেলে
-        if (!isAdmin && !isDynamicKey) {
+        // ভেরিফিকেশন ফেল করলে
+        if (!isAdmin && !isDynamicMatch) {
             return res.status(403).json({ error: "ACCESS DENIED: INVALID OR EXPIRED KEY" });
         }
 
-        // লিমিট চেক (শুধুমাত্র ডাইনামিক কি-র জন্য ২ বার লিমিট)
+        // লিমিট চেক (অ্যাডমিনের জন্য আনলিমিটেড)
         if (!isAdmin && useCount >= 2) {
-            serverSideKey = ""; // কি এক্সপায়ার করে দেওয়া
+            serverSideKey = ""; 
             return res.status(403).json({ error: "LIMIT EXCEEDED: GET NEW KEY" });
         }
 
         try {
             const response = await axios.get(url, {
-                headers: { 'User-Agent': 'Mozilla/5.0' },
+                headers: { 
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html'
+                },
                 timeout: 10000
             });
-            
-            if (!isAdmin) useCount++; // অ্যাডমিন হলে লিমিট কমবে না
-            
+            if(!isAdmin) useCount++;
             res.status(200).send(response.data);
         } catch (error) {
-            res.status(500).json({ error: "TARGET UNREACHABLE" });
+            res.status(500).json({ error: "TARGET UNREACHABLE OR PROTECTED" });
         }
     }
 };

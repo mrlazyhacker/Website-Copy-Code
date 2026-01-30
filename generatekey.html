@@ -3,29 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KEY SERVER</title>
+    <title>MR LAZY | KEY SERVER</title>
     <style>
         body { background: #000; color: #0f0; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { border: 1px solid #0f0; padding: 30px; text-align: center; box-shadow: 0 0 20px #0f0; width: 300px; }
-        .key { background: #111; padding: 15px; border: 1px dashed #0f0; color: #fff; font-size: 1.2rem; margin: 20px 0; }
-        button { background: #0f0; color: #000; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .box { border: 1px solid #0f0; padding: 30px; text-align: center; box-shadow: 0 0 20px #0f0; width: 320px; border-radius: 10px; }
+        .key-display { background: #111; padding: 15px; border: 1px dashed #0f0; color: #fff; font-size: 1.3rem; margin: 20px 0; letter-spacing: 2px; }
+        button { background: #0f0; color: #000; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div class="box">
         <h3>[ KEY SERVER ]</h3>
-        <div id="k" class="key">FETCHING...</div>
-        <button onclick="c()">COPY & RETURN</button>
+        <p style="font-size: 10px;">GENERATING UNIQUE TOKEN...</p>
+        <div id="key-out" class="key-display">FETCHING...</div>
+        <button onclick="copyAndBack()">COPY & RETURN</button>
     </div>
+
     <script>
-        let k = "";
-        async function g() {
-            const r = await fetch('/api');
-            const d = await r.json();
-            k = d.key; document.getElementById('k').innerText = k;
+        let currentKey = "";
+        async function fetchKey() {
+            try {
+                const res = await fetch('/api');
+                const data = await res.json();
+                currentKey = data.key;
+                document.getElementById('key-out').innerText = currentKey;
+            } catch(e) { document.getElementById('key-out').innerText = "ERROR"; }
         }
-        function c() { navigator.clipboard.writeText(k); alert("COPIED!"); window.history.back(); }
-        window.onload = g;
+
+        function copyAndBack() {
+            if(!currentKey) return;
+            navigator.clipboard.writeText(currentKey);
+            alert("KEY COPIED: " + currentKey);
+            window.history.back();
+        }
+        window.onload = fetchKey;
     </script>
 </body>
 </html>
